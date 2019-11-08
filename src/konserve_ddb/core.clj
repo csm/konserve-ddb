@@ -245,9 +245,9 @@
     (let [ddb-client (or ddb-client (aws-client/client {:api :dynamodb
                                                         :region region
                                                         :credentials-provider credentials-provider}))
-          table-exists (async/<! (aws/invoke ddb-client {:op :DescribeTable
-                                                         :request {:TableName table}}))
-          table-ok (cond (table-not-found? table-exists)
+          table-info (async/<! (aws/invoke ddb-client {:op :DescribeTable
+                                                       :request {:TableName table}}))
+          table-ok (cond (table-not-found? table-info)
                          (async/<! (aws/invoke ddb-client {:op :CreateTable
                                                            :request {:TableName table
                                                                      :AttributeDefinitions [{:AttributeName "key"
@@ -256,13 +256,13 @@
                                                                                   :KeyType "HASH"}]
                                                                      :ProvisionedThroughput {:ReadCapacityUnits read-throughput
                                                                                              :WriteCapacityUnits write-throughput}}}))
-                         (anomaly? table-exists)
-                         table-exists
+                         (anomaly? table-info)
+                         table-info
 
                          (or (not= [{:AttributeName "key" :AttributeType "S"}]
-                                   (:AttributeDefinitions table-exists))
+                                   (-> table-info :Table :AttributeDefinitions))
                              (not= [{:AttributeName "key" :KeyType "HASH"}]
-                                   (:KeySchema table-exists)))
+                                   (-> table-info :Table :KeySchema)))
                          {::anomalies/category ::anomalies/incorrect
                           ::anomalies/message "table exists but has incompatible configuration"}
 
@@ -303,9 +303,9 @@
                          table-info
 
                          (or (not= [{:AttributeName "key" :AttributeType "S"}]
-                                   (:AttributeDefinitions table-info))
+                                   (-> table-info :Table :AttributeDefinitions))
                              (not= [{:AttributeName "key" :KeyType "HASH"}]
-                                   (:KeySchema table-info)))
+                                   (-> table-info :Table :KeySchema table-info)))
                          {::anomalies/category ::anomalies/incorrect
                           ::anomalies/message "table exists but has incompatible configuration"}
 
