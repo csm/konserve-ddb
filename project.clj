@@ -1,4 +1,4 @@
-(defproject com.github.csm/konserve-ddb "0.1.1"
+(defproject com.github.csm/konserve-ddb "0.1.2-SNAPSHOT"
   :description "FIXME: write description"
   :url "https://github.com/csm/konserve-ddb"
   :license {:name "MIT"
