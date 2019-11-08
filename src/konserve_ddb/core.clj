@@ -73,7 +73,7 @@
        (/ 1000000.0))))
 
 (defn- do-get-in
-  ([store ks] (do-get-in store key nil))
+  ([store ks] (do-get-in store ks nil))
   ([{:keys [ddb-client table-name serializer read-handlers]} key attributes-to-get]
    (sv/go-try
      sv/S
@@ -285,12 +285,10 @@
         (ex-info "failed to delete table" {:error result})))))
 
 (defn connect-store
-  [{:keys [region table serializer read-handlers write-handlers read-throughput write-throughput ddb-client credentials-provider]
+  [{:keys [region table serializer read-handlers write-handlers ddb-client credentials-provider]
     :or {serializer default-serializer
          read-handlers (atom {})
-         write-handlers (atom {})
-         read-throughput 1
-         write-throughput 1}}]
+         write-handlers (atom {})}}]
   (sv/go-try
     sv/S
     (let [ddb-client (or ddb-client
@@ -305,7 +303,7 @@
                          (or (not= [{:AttributeName "key" :AttributeType "S"}]
                                    (-> table-info :Table :AttributeDefinitions))
                              (not= [{:AttributeName "key" :KeyType "HASH"}]
-                                   (-> table-info :Table :KeySchema table-info)))
+                                   (-> table-info :Table :KeySchema)))
                          {::anomalies/category ::anomalies/incorrect
                           ::anomalies/message "table exists but has incompatible configuration"}
 
